@@ -5,7 +5,7 @@ import matplotlib.gridspec as gridspec
 
 # Cấu hình style đồ thị chuyên nghiệp hơn
 plt.style.use('seaborn-v0_8-darkgrid')
-plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.family'] = ['Arial', 'Segoe UI', 'Tahoma', 'sans-serif']
 
 # ==========================================
 # 1. DỮ LIỆU ĐẦU VÀO CỐ ĐỊNH
