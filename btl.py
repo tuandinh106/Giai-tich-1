@@ -64,6 +64,7 @@ ax1.annotate(f'Giới hạn (Sức chịu tải tối đa): $K \\approx {K_opt:.
 
 ax1.set_title("1. Quỹ đạo tích lũy thiết bị IoT theo thời gian", fontsize=12, fontweight='bold')
 ax1.set_ylabel("Số lượng thiết bị", fontsize=11)
+ax1.set_xlabel("Thời gian (Tháng)", fontsize=11)
 ax1.legend(loc='lower right')
 
 # --- ĐỒ THỊ 2: TỐC ĐỘ TĂNG TRƯỞNG P'(t) ---
@@ -107,10 +108,10 @@ info_text = (
 )
 
 # Khung chứa Text tuyệt đẹp
-bbox_props = dict(boxstyle="round,pad=1.2", fc="#f8f9fa", ec="#ced4da", lw=2)
+bbox_props = dict(boxstyle="round,pad=1.8", fc="#f8f9fa", ec="#ced4da", lw=2)
 # Đã xóa thuộc tính fontfamily='monospace' gây lỗi
-ax3.text(0.02, 0.5, info_text, fontsize=12, verticalalignment='center', 
-         bbox=bbox_props, linespacing=1.6)
+ax3.text(0.15, 0.5, info_text, fontsize=12.5, verticalalignment='center', 
+         bbox=bbox_props, linespacing=1.9)
 
 plt.tight_layout()
 plt.show()
