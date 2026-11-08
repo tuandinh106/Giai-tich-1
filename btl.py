@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import matplotlib.gridspec as gridspec
 
-# Cấu hình style đồ thị chuyên nghiệp hơn
 plt.style.use('seaborn-v0_8-darkgrid')
 plt.rcParams['font.family'] = ['Arial', 'Segoe UI', 'Tahoma', 'sans-serif']
 
@@ -22,15 +21,18 @@ def logistic_model(t, K, A, k):
 def growth_rate(t, K, A, k):
     return (K * A * k * np.exp(-k * t)) / (1 + A * np.exp(-k * t))**2
 
+# Hồi quy tìm tham số
 p0 = [160, 30, 0.3]
 popt, _ = curve_fit(logistic_model, t_data, P_data, p0=p0)
 K_opt, A_opt, k_opt = popt
 
-max_capacity = K_opt 
-t_inflection = np.log(A_opt) / k_opt 
+# Các điểm Toán học quan trọng (Mục tiêu Giải tích)
+max_capacity = K_opt # Giới hạn vô cực
+t_inflection = np.log(A_opt) / k_opt # Điểm uốn P''(t) = 0
 P_inflection = logistic_model(t_inflection, K_opt, A_opt, k_opt)
 max_rate = growth_rate(t_inflection, K_opt, A_opt, k_opt)
 
+# Tính hệ số R-squared (Mức độ phù hợp của mô hình)
 P_pred = logistic_model(t_data, K_opt, A_opt, k_opt)
 ss_res = np.sum((P_data - P_pred) ** 2)
 ss_tot = np.sum((P_data - np.mean(P_data)) ** 2)
@@ -89,13 +91,13 @@ ax3.axis('off') # Tắt trục tọa độ để làm bảng Text
 
 info_text = (
     "TỔNG HỢP THÔNG SỐ TOÁN HỌC\n"
-    "-----------------------------------\n\n"
+    "--------------------------------------\n\n"
     "1. Phương trình mô hình:\n"
     f"$P(t) = \\frac{{{K_opt:.1f}}}{{1 + {A_opt:.2f}e^{{-{k_opt:.3f}t}}}}$\n\n"
     "2. Đánh giá mô hình:\n"
     f"Hệ số xác định $R^2$ = {r_squared:.4f}\n"
     "(>0.95: Mô hình rất khớp dữ liệu)\n\n"
-    "3. Giới hạn (Khảo sát dải hạn):\n"
+    "3. Giới hạn (Khảo sát dài hạn):\n"
     f"$\\lim_{{t \\to \\infty}} P(t) = K = {max_capacity:.0f}$ (thiết bị)\n"
     "-> Cần cấp phát tối đa IPs/Băng thông\n\n"
     "4. Phân tích Đạo hàm:\n"
@@ -105,9 +107,10 @@ info_text = (
 )
 
 # Khung chứa Text tuyệt đẹp
-bbox_props = dict(boxstyle="round,pad=1", fc="#f8f9fa", ec="#ced4da", lw=2)
-ax3.text(0.05, 0.5, info_text, fontsize=12, verticalalignment='center', 
-         fontfamily='monospace', bbox=bbox_props, linespacing=1.6)
+bbox_props = dict(boxstyle="round,pad=1.2", fc="#f8f9fa", ec="#ced4da", lw=2)
+# Đã xóa thuộc tính fontfamily='monospace' gây lỗi
+ax3.text(0.02, 0.5, info_text, fontsize=12, verticalalignment='center', 
+         bbox=bbox_props, linespacing=1.6)
 
 plt.tight_layout()
 plt.show()
