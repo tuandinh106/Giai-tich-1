@@ -6,58 +6,44 @@ import matplotlib.gridspec as gridspec
 plt.style.use('seaborn-v0_8-darkgrid')
 plt.rcParams['font.family'] = ['Arial', 'Segoe UI', 'Tahoma', 'sans-serif']
 
-# ==========================================
-# 1. DỮ LIỆU ĐẦU VÀO CỐ ĐỊNH
-# ==========================================
 t_data = np.array([0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24])
 P_data = np.array([5, 7, 11, 20, 35, 60, 85, 110, 130, 142, 148, 151, 153])
 
-# ==========================================
-# 2. TOÁN HỌC & HỒI QUY (CALCULUS & CURVE FITTING)
-# ==========================================
 def logistic_model(t, K, A, k):
     return K / (1 + A * np.exp(-k * t))
 
 def growth_rate(t, K, A, k):
     return (K * A * k * np.exp(-k * t)) / (1 + A * np.exp(-k * t))**2
 
-# Hồi quy tìm tham số
 p0 = [160, 30, 0.3]
-popt, _ = curve_fit(logistic_model, t_data, P_data, p0=p0)
+popt, _ = curve_fit(logistic_model, t_data, P_data, p0=p0, 
+                    bounds=([0, 0, 0], [np.inf, np.inf, np.inf]), maxfev=20000)
 K_opt, A_opt, k_opt = popt
 
-# Các điểm Toán học quan trọng (Mục tiêu Giải tích)
-max_capacity = K_opt # Giới hạn vô cực
-t_inflection = np.log(A_opt) / k_opt # Điểm uốn P''(t) = 0
+max_capacity = K_opt
+t_inflection = np.log(A_opt) / k_opt
 P_inflection = logistic_model(t_inflection, K_opt, A_opt, k_opt)
 max_rate = growth_rate(t_inflection, K_opt, A_opt, k_opt)
 
-# Tính hệ số R-squared (Mức độ phù hợp của mô hình)
 P_pred = logistic_model(t_data, K_opt, A_opt, k_opt)
 ss_res = np.sum((P_data - P_pred) ** 2)
 ss_tot = np.sum((P_data - np.mean(P_data)) ** 2)
 r_squared = 1 - (ss_res / ss_tot)
 
-# ==========================================
-# 3. TRÌNH BÀY ĐỒ THỊ VIP (DASHBOARD)
-# ==========================================
 t_fit = np.linspace(0, 30, 300)
 P_fit = logistic_model(t_fit, K_opt, A_opt, k_opt)
 rate_fit = growth_rate(t_fit, K_opt, A_opt, k_opt)
 
-# Khởi tạo Dashboard
 fig = plt.figure(figsize=(14, 8))
 fig.suptitle("PHÂN TÍCH TOÁN HỌC: MÔ HÌNH LOGISTIC TRONG SMART HOME", fontsize=18, fontweight='bold', color='#1f2a44')
 gs = gridspec.GridSpec(2, 2, width_ratios=[2.5, 1])
 
-# --- ĐỒ THỊ 1: QUỸ ĐẠO TĂNG TRƯỞNG P(t) ---
 ax1 = fig.add_subplot(gs[0, 0])
-ax1.plot(t_data, P_data, 'ko', markersize=6, label='Dữ liệu đo đạc (Data)')
+ax1.plot(t_data, P_data, 'ko', markersize=6, label='Dữ liệu giả định/nội suy')
 ax1.plot(t_fit, P_fit, 'b-', linewidth=2.5, label='Đường cong Logistic $P(t)$')
 ax1.axhline(y=K_opt, color='r', linestyle='--', alpha=0.7)
 
-# Ghi chú Giới hạn
-ax1.annotate(f'Giới hạn (Sức chịu tải tối đa): $K \\approx {K_opt:.0f}$', 
+ax1.annotate(f'Ngưỡng bão hòa số thiết bị: $K \\approx {K_opt:.0f}$', 
              xy=(25, K_opt), xytext=(15, K_opt - 30),
              arrowprops=dict(facecolor='red', shrink=0.05, width=1.5, headwidth=8),
              fontsize=11, bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="red", lw=1.5))
@@ -67,13 +53,10 @@ ax1.set_ylabel("Số lượng thiết bị", fontsize=11)
 ax1.set_xlabel("Thời gian (Tháng)", fontsize=11)
 ax1.legend(loc='lower right')
 
-# --- ĐỒ THỊ 2: TỐC ĐỘ TĂNG TRƯỞNG P'(t) ---
 ax2 = fig.add_subplot(gs[1, 0], sharex=ax1)
-# Đổ màu dưới đường cong (Tích phân)
 ax2.fill_between(t_fit, rate_fit, color='#a0c4ff', alpha=0.5)
 ax2.plot(t_fit, rate_fit, color='#004aad', linewidth=2.5, label="$P'(t)$ (Đạo hàm bậc 1)")
 
-# Ghi chú Điểm bùng phát
 ax2.plot(t_inflection, max_rate, 'r*', markersize=12)
 ax2.axvline(x=t_inflection, color='k', linestyle=':', alpha=0.6)
 ax2.annotate(f'ĐIỂM BÙNG PHÁT\n$P\'\'(t)=0$ (Tháng {t_inflection:.1f})', 
@@ -86,9 +69,8 @@ ax2.set_xlabel("Thời gian (Tháng)", fontsize=11)
 ax2.set_ylabel("Thiết bị / Tháng", fontsize=11)
 ax2.legend(loc='upper right')
 
-# --- BẢNG THÔNG SỐ TOÁN HỌC (Panel bên phải) ---
 ax3 = fig.add_subplot(gs[:, 1])
-ax3.axis('off') # Tắt trục tọa độ để làm bảng Text
+ax3.axis('off')
 
 info_text = (
     "TỔNG HỢP THÔNG SỐ TOÁN HỌC\n"
@@ -100,16 +82,14 @@ info_text = (
     "(>0.95: Mô hình rất khớp dữ liệu)\n\n"
     "3. Giới hạn (Khảo sát dài hạn):\n"
     f"$\\lim_{{t \\to \\infty}} P(t) = K = {max_capacity:.0f}$ (thiết bị)\n"
-    "-> Cần cấp phát tối đa IPs/Băng thông\n\n"
+    "-> Ngưỡng số thiết bị theo kịch bản mô hình\n\n"
     "4. Phân tích Đạo hàm:\n"
     f"- Thời điểm bùng phát: Tháng {t_inflection:.1f}\n"
     f"- Tốc độ tối đa: {max_rate:.1f} (thiết bị/tháng)\n"
     f"- Khối lượng lúc đó: $P = K/2 = {P_inflection:.0f}$"
 )
 
-# Khung chứa Text tuyệt đẹp
 bbox_props = dict(boxstyle="round,pad=1.8", fc="#f8f9fa", ec="#ced4da", lw=2)
-# Đã xóa thuộc tính fontfamily='monospace' gây lỗi
 ax3.text(0.15, 0.5, info_text, fontsize=12.5, verticalalignment='center', 
          bbox=bbox_props, linespacing=1.9)
 
